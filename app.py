@@ -1,3 +1,4 @@
+%%writefile /kaggle/working/app.py
 from pathlib import Path
 import joblib
 import pandas as pd
@@ -39,15 +40,25 @@ if clicked:
     else:
         completion_pct = submitted / 10 * 100
         on_time_tasks = submitted - late
+        
+        # Кеш тапсырылған жұмыстардың пайызын есептеу
+        late_pct = (late / submitted * 100) if submitted > 0 else 0
+        
         row = pd.DataFrame([{
             "pretest_score": pretest,
             "attendance_pct": attendance,
             "completion_pct": completion_pct,
             "on_time_tasks": on_time_tasks
         }])
+        
         prediction = float(model.predict(row[features])[0])
+        
         st.metric("Болжамды балл", f"{prediction:.1f} / 100")
-        a, b = st.columns(2)
+        
+        # Метрикаларды 3 бағанға бөліп көрсету
+        a, b, c = st.columns(3)
         a.metric("Орындау үлесі", f"{completion_pct:.0f}%")
         b.metric("Уақытында тапсырылған", str(on_time_tasks))
+        c.metric("Кеш қалу пайызы", f"{late_pct:.1f}%")
+        
         st.caption("Болжам нақты нәтижеге кепілдік бермейді.")
